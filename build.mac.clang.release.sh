@@ -2,7 +2,7 @@ export ROOT="$( cd "$(dirname "$0")" ; pwd -P )"
 
 export COMPILER_LANG=clang
 export BUILD_TYPE=SuperRelease
-export OS=gcc
+export OS=mac
 export VERSION=Public
 export BUILD_DIR=$ROOT/build-$OS-$VERSION-$COMPILER_LANG-$BUILD_TYPE
 export INSTALL_PATH=$ROOT/debug-$OS-$VERSION-$COMPILER_LANG-$BUILD_TYPE

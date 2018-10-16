@@ -1,1 +1,7 @@
 lib/
+3rdparty/curl-7.61.1/
+3rdparty/openssl-1.0.2p/
+3rdparty/zlib-1.2.11/
+build-mac-Public-clang-SuperRelease/
+debug-mac-Public-clang-SuperRelease/
+.DS_Store

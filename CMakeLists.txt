@@ -35,14 +35,8 @@ message("CMAKE_INSTALL_PREFIX = ${CMAKE_INSTALL_PREFIX}")
 
 
 ADD_SUBDIRECTORY(src)
-#ADD_SUBDIRECTORY(example)
+ADD_SUBDIRECTORY(example)
 
 add_custom_target(httpclient-all ALL )
 add_dependencies(httpclient-all httpclient)
-
-
-
-
-
-
 

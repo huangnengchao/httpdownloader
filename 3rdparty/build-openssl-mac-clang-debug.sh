@@ -17,7 +17,7 @@ cd $OPENSSL_ROOT/$OPENSSL_VERSION
 
 echo "OPENSSL_ROOT = $OPENSSL_ROOT"
 
-./config --debug no-shared --prefix=$OPENSSL_ROOT/../lib/$OS/$COMPILER/$BUILDTYPE/openssl
+./Configure darwin64-x86_64-cc --debug no-shared --prefix=$OPENSSL_ROOT/../lib/$OS/$COMPILER/$BUILDTYPE/openssl
 
 make -j$CONCURRENT_JOB
 make install

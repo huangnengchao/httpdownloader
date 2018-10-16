@@ -19,7 +19,7 @@ export C_INCLUDE_PATH="/usr/include/x86_64-linux-gnu"
 
 echo "CURL_ROOT = $CURL_ROOT"
 
-./configure  --prefix=$CURL_ROOT/../lib/$OS/$COMPILER/$BUILDTYPE/curl  --enable-debug=no --enable-static=yes --enable-shared=no \
+./configure  --prefix=$CURL_ROOT/../lib/$OS/$COMPILER/$BUILDTYPE/curl  --enable-debug=no --disable-ldap --disable-ldaps --enable-static=yes --enable-shared=no \
  --enable-http --with-ssl=$OPENSSL_ROOT/../lib/$OS/$COMPILER/$BUILDTYPE/openssl --with-zlib=$ZLIB_ROOT/../lib/$OS/$COMPILER/$BUILDTYPE/zlib
 make -j${CONCURRENT_JOB}
 make install
