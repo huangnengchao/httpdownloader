@@ -5,8 +5,8 @@
 #include <functional>
 
 typedef struct _progress_info {
-	double progress_percentage;  			//96.21%
-	std::string remaining_time;			//1MB/s
+	double progress_percentage;  	//96.21%
+	std::string remaining_time;		//1MB/s
 	std::string download_speed; 	//00:01:54 hh::mm::ss
 } progress_info;
 
@@ -18,6 +18,7 @@ public:
 	~http_downloader();
 
 public:
+	//just for download file, not for webpage. like: https:://gtz.io/gtz_latest.run
 	int download(const std::string& url, const std::string& save_path);
 
 	inline void set_callback(progress_callback_t callback) {

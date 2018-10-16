@@ -37,4 +37,3 @@ endif()
 
 INSTALL_TARGETS( /  example)
 
-INSTALL(FILES ${curl_LIB_PATH}/libcurl.a ${zlib_LIB_PATH}/libz.a ${openssl_LIB_PATH}/libssl.a ${openssl_LIB_PATH}/libcrypto.a DESTINATION ${CMAKE_INSTALL_PREFIX}/)

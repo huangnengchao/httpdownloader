@@ -4,8 +4,13 @@ lib/
 3rdparty/zlib-1.2.11/
 build-mac-Public-clang-SuperRelease/
 debug-mac-Public-clang-SuperRelease/
+build-mac-Public-clang-Debug/
+debug-mac-Public-clang-Debug/
 build-linux-Public-gcc-SuperRelease/
 debug-linux-Public-gcc-SuperRelease/
+build-linux-Public-gcc-Debug/
+debug-linux-Public-gcc-Debug/
+
 .DS_Store
 .cproject
 .project
