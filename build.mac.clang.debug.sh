@@ -1,0 +1,18 @@
+export ROOT="$( cd "$(dirname "$0")" ; pwd -P )"
+
+export COMPILER_LANG=clang
+export BUILD_TYPE=Debug
+export OS=mac
+export VERSION=Public
+export BUILD_DIR=$ROOT/build-$OS-$VERSION-$COMPILER_LANG-$BUILD_TYPE
+export INSTALL_PATH=$ROOT/debug-$OS-$VERSION-$COMPILER_LANG-$BUILD_TYPE
+
+mkdir -p $BUILD_DIR
+cd $BUILD_DIR
+
+cmake $ROOT -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCOMPILER_CHOOSE=$COMPILER_LANG \
+    -DCMAKE_INSTALL_PREFIX=$INSTALL_PATH -DPUBLIC=ON
+make VERBOSE=1 -j2
+make install
+
+
