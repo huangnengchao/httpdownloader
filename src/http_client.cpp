@@ -18,17 +18,17 @@
 #endif
 
 
-http_client *http_client::instance = NULL;
+http_client *http_client::instance_ = NULL;
 
-double http_client::downloadFileLength = -1;
-p_off_t http_client::resumeByte = -1;
-time_t http_client::lastTime = 0;
+double http_client::download_file_length_ = -1;
+p_off_t http_client::resume_byte_ = -1;
+time_t http_client::last_time_ = 0;
 
-bool http_client::stopCurl = false;
+volatile bool http_client::stop_curl_ = false;
 
-double http_client::current_process = 0.0;
-int http_client::count_process = 0;
-int http_client::retry = 100;
+double http_client::current_process_ = 0.0;
+int http_client::count_process_ = 0;
+int http_client::retry_ = 100;
 
 
 typedef struct
@@ -64,15 +64,15 @@ int http_client::progress_callback(void *userdata, curl_off_t dltotal, curl_off_
     (void)ultotal;
     (void)ulnow;
 
-    if(stopCurl)
+    if(stop_curl_)
         return 1;
 
     time_t now = time(NULL);
-    if (now - lastTime < 1)
+    if (now - last_time_ < 1)
     {
         return 0;
     }
-    lastTime = now;
+    last_time_ = now;
 
     Progress_User_Data *data = static_cast<Progress_User_Data *>(userdata);
     CURL *easy_handle = data->handle;
@@ -87,23 +87,23 @@ int http_client::progress_callback(void *userdata, curl_off_t dltotal, curl_off_
     // Progress percentage
     double progress = 0;
 
-    printf("dltotal=%d, speed=%d, downloadFileLength=%f\n", dltotal, speed, downloadFileLength);
+    //printf("dltotal=%d, speed=%d, downloadFileLength=%f\n", dltotal, speed, download_file_length_);
 
     if (dltotal != 0 && speed != 0)
     {
-        progress = (dlnow + resumeByte) / downloadFileLength * 100;
-        leftTime = (downloadFileLength - dlnow - resumeByte) / speed;
+        progress = (dlnow + resume_byte_) / download_file_length_ * 100;
+        leftTime = (download_file_length_ - dlnow - resume_byte_) / speed;
         //printf("\t%.2f%%\tRemaing time:%s\n", progress, timeFormat);
     }
 
-    if (http_client::current_process == progress) {
-        http_client::count_process++;
+    if (http_client::current_process_ == progress) {
+        http_client::count_process_++;
     } else  {
-        http_client::current_process = progress;
+        http_client::current_process_ = progress;
     }
 
-    if (http_client::count_process > 10) {
-        http_client::count_process = 0;
+    if (http_client::count_process_ > 10) {
+        http_client::count_process_ = 0;
         return 1;
     }
 
@@ -124,27 +124,27 @@ http_client::~http_client()
 {
 }
 
-http_client *http_client::getInstance()
+http_client *http_client::get_instance()
 {
-    if (instance == NULL)
+    if (instance_ == NULL)
 	{
-		instance = new http_client();
-		instance->init();
+		instance_ = new http_client();
+		instance_->init();
 	}
 
-	return instance;
+	return instance_;
 }
 
-void http_client::destroyInstance()
+void http_client::destroy_instance()
 {
-    if (instance != NULL)
+    if (instance_ != NULL)
 	{
-        stopCurl = true;
+        stop_curl_ = true;
 
         // curl_global_cleanup()    will crash on Qt windows
 
-        delete instance;
-        instance = NULL;
+        delete instance_;
+        instance_ = NULL;
 	}
 }
 
@@ -164,10 +164,10 @@ void http_client::xlog(const char *date, const char *time, const char *file, con
 }
 
 // Return 0 if success, otherwise return error code
-int http_client::http_get(const std::string& requestURL, const std::string& saveTo, void *sender, progress_info_callback cb)
+int http_client::http_get(const std::string& requesturl, const std::string& saveto, void *sender, progress_info_callback cb)
 {
 	XLOG("http_client::HttpGet");
-    std::string partPath = saveTo + ".part";
+    std::string partPath = saveto + ".part";
 
     CURL *easy_handle = NULL;
     FILE *fp = NULL;
@@ -177,9 +177,9 @@ int http_client::http_get(const std::string& requestURL, const std::string& save
     do
     {
         // Get the file size on the server
-        downloadFileLength = getDownloadFileLength(requestURL);
+        download_file_length_ = get_download_file_length(requesturl);
 
-        if (downloadFileLength < 0)
+        if (download_file_length_ < 0)
         {
             XLOG("getDownloadFileLength error");
             break;
@@ -205,7 +205,7 @@ int http_client::http_get(const std::string& requestURL, const std::string& save
         }
 
         // Set the url
-        ret = curl_easy_setopt(easy_handle, CURLOPT_URL, requestURL.c_str());
+        ret = curl_easy_setopt(easy_handle, CURLOPT_URL, requesturl.c_str());
 
         // Save data from the server
         ret |= curl_easy_setopt(easy_handle, CURLOPT_WRITEFUNCTION, &http_client::write_callback);
@@ -227,11 +227,11 @@ int http_client::http_get(const std::string& requestURL, const std::string& save
         // The maximum time that allow to wait download
         //ret |= curl_easy_setopt(easy_handle, CURLOPT_TIMEOUT, 12L);
 
-		resumeByte = getLocalFileLength(partPath);
-        if (resumeByte > 0)
+		resume_byte_ = get_local_file_length(partPath);
+        if (resume_byte_ > 0)
         {
             // Set a point to resume transfer
-            ret |= curl_easy_setopt(easy_handle, CURLOPT_RESUME_FROM_LARGE, resumeByte);
+            ret |= curl_easy_setopt(easy_handle, CURLOPT_RESUME_FROM_LARGE, resume_byte_);
         }
 
         if (ret != CURLE_OK)
@@ -242,7 +242,7 @@ int http_client::http_get(const std::string& requestURL, const std::string& save
         }
 
         XLOG("start");
-        int retry = http_client::retry;
+        int retry = http_client::retry_;
         while (retry--) {
         	ret = curl_easy_perform(easy_handle);
         	if (ret == CURLE_OK) {
@@ -260,12 +260,12 @@ int http_client::http_get(const std::string& requestURL, const std::string& save
         		XSLEEP(1);
 
             	fflush(fp);
-        		resumeByte = getLocalFileLength(partPath);
-                if (resumeByte > 0)
+        		resume_byte_ = get_local_file_length(partPath);
+                if (resume_byte_ > 0)
                 {
                 	ret  = 0;
                     // Set a point to resume transfer
-                	ret |= curl_easy_setopt(easy_handle, CURLOPT_RESUME_FROM_LARGE, resumeByte);
+                	ret |= curl_easy_setopt(easy_handle, CURLOPT_RESUME_FROM_LARGE, resume_byte_);
                     if (ret != CURLE_OK)
                     {
             			ret = HTTP_REQUEST_ERROR;
@@ -319,8 +319,8 @@ int http_client::http_get(const std::string& requestURL, const std::string& save
 
     if (ret == CURLE_OK)
     {
-        remove(saveTo.c_str());
-		rename(partPath.c_str(), saveTo.c_str());
+        remove(saveto.c_str());
+		rename(partPath.c_str(), saveto.c_str());
     }
 
     return ret;
@@ -329,7 +329,7 @@ int http_client::http_get(const std::string& requestURL, const std::string& save
 
 
 // Get the local file size, return -1 if failed
-p_off_t http_client::getLocalFileLength(std::string path)
+p_off_t http_client::get_local_file_length(std::string path)
 {
 	p_off_t ret;
 	struct stat fileStat;
@@ -351,13 +351,13 @@ size_t nousecb(char *buffer, size_t x, size_t y, void *userdata)
 }
 
 // Get the file size on the server
-double http_client::getDownloadFileLength(std::string url)
+double http_client::get_download_file_length(std::string url)
 {
     CURL *easy_handle = NULL;
 	int ret = CURLE_OK;
 	double size = -1;
 
-	int retry = http_client::retry;
+	int retry = http_client::retry_;
 
 	do
 	{

@@ -19,14 +19,11 @@ endif()
 
 
 add_executable(example ${EXAMPLE_SRC})
-#message("----------------${CMAKE_INSTALL_PREFIX}")
 
-target_link_libraries(example  ${openssl_LIB_PATH}/libssl.a ${openssl_LIB_PATH}/libcrypto.a)
-target_link_libraries(example  ${zlib_LIB_PATH}/libz.a)
 target_link_libraries(example  ${CMAKE_INSTALL_PREFIX}/libhttpclient.a)
 target_link_libraries(example  ${curl_LIB_PATH}/libcurl.a)
-
-
+target_link_libraries(example  ${openssl_LIB_PATH}/libssl.a ${openssl_LIB_PATH}/libcrypto.a)
+target_link_libraries(example  ${zlib_LIB_PATH}/libz.a)
 
 if(APPLE)
         target_link_libraries(example pthread dl ldap)
@@ -39,3 +36,5 @@ endif()
 
 
 INSTALL_TARGETS( /  example)
+
+INSTALL(FILES ${curl_LIB_PATH}/libcurl.a ${zlib_LIB_PATH}/libz.a ${openssl_LIB_PATH}/libssl.a ${openssl_LIB_PATH}/libcrypto.a DESTINATION ${CMAKE_INSTALL_PREFIX}/)

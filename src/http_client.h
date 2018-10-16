@@ -19,13 +19,12 @@ typedef std::function<void(void *userdata, double download_speed, double remaini
 class http_client
 {
 public:
-
 	~http_client();
 
-	static http_client *getInstance();
-	static void destroyInstance();
+	static http_client *get_instance();
+	static void destroy_instance();
 
-    int http_get(const std::string& requestURL, const std::string& saveTo, void *sender, progress_info_callback cb);
+    int http_get(const std::string& requesturl, const std::string& saveto, void *sender, progress_info_callback cb);
     static void xlog(const char *date, const char *time, const char *file, const int line, const char *func, const char* str);
 
 private:
@@ -37,26 +36,20 @@ private:
     static int progress_callback(void *userdata, curl_off_t dltotal, curl_off_t dlnow, curl_off_t ultotal, curl_off_t ulnow);
 
 	// Get the local file size
-	p_off_t getLocalFileLength(std::string path);
+	p_off_t get_local_file_length(std::string path);
 
 	// Get the file size on the server
-	double getDownloadFileLength(std::string url);
+	double get_download_file_length(std::string url);
 
 private:
-	static http_client *instance;
-
-	static double downloadFileLength;
-	static p_off_t resumeByte;
-
-	// Call frequency of the callback function
-	static time_t lastTime;
-
-    static bool stopCurl;
-
-    static double current_process;
-    static int count_process;
-
-    static int retry;
+	static http_client *instance_;
+	static double download_file_length_;
+	static p_off_t resume_byte_;			//
+	static time_t last_time_;				// Call frequency of the callback function
+    volatile static bool stop_curl_;		// Stop curl
+    static double current_process_;
+    static int count_process_;
+    static int retry_;
 };
 
 #endif		// __HTTPCLIENT_H__
