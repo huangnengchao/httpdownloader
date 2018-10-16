@@ -3,8 +3,6 @@
 #include <sys/stat.h>
 #include <stdlib.h>
 
-
-
 //#define DEBUG_LOG__
 
 #define XLOG(str) http_client::xlog(__DATE__, __TIME__, __FILE__, __LINE__, __FUNCTION__, str);
@@ -30,7 +28,7 @@ double http_client::current_process_ = 0.0;
 int http_client::count_process_ = 0;
 int http_client::retry_ = 100;
 
-int http_client::get_file_length_retry_ = 10;
+int http_client::get_file_length_retry_ = 64;
 
 
 typedef struct
@@ -376,7 +374,7 @@ double http_client::get_download_file_length(std::string url)
         ret |= curl_easy_setopt(easy_handle, CURLOPT_WRITEFUNCTION, nousecb);	// libcurl_a.lib will return error code 23 without this sentence on windows
 
         // The maximum time that allow to wait download
-        ret |= curl_easy_setopt(easy_handle, CURLOPT_TIMEOUT, 12L);
+        ret |= curl_easy_setopt(easy_handle, CURLOPT_TIMEOUT, 32L);
 
 
 		if (ret != CURLE_OK)
