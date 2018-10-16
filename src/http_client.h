@@ -49,6 +49,7 @@ private:
     static double current_process_;
     static int count_process_;
     static int retry_;
+    static int get_file_length_retry_;		// Get File Length retry times
 };
 
 #endif		// __HTTPCLIENT_H__

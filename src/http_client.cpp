@@ -30,6 +30,8 @@ double http_client::current_process_ = 0.0;
 int http_client::count_process_ = 0;
 int http_client::retry_ = 100;
 
+int http_client::get_file_length_retry_ = 10;
+
 
 typedef struct
 {
@@ -357,8 +359,7 @@ double http_client::get_download_file_length(std::string url)
 	int ret = CURLE_OK;
 	double size = -1;
 
-	int retry = http_client::retry_;
-
+	int retry = http_client::get_file_length_retry_;
 	do
 	{
 		easy_handle = curl_easy_init();
@@ -375,7 +376,7 @@ double http_client::get_download_file_length(std::string url)
         ret |= curl_easy_setopt(easy_handle, CURLOPT_WRITEFUNCTION, nousecb);	// libcurl_a.lib will return error code 23 without this sentence on windows
 
         // The maximum time that allow to wait download
-        ret |= curl_easy_setopt(easy_handle, CURLOPT_TIMEOUT, 32L);
+        ret |= curl_easy_setopt(easy_handle, CURLOPT_TIMEOUT, 12L);
 
 
 		if (ret != CURLE_OK)

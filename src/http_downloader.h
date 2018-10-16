@@ -18,7 +18,7 @@ public:
 	~http_downloader();
 
 public:
-	//just for download file, not for webpage. like: https:://gtz.io/gtz_latest.run
+	//just for download file, not for webpage. like: https:://gtz.io/gtz_latest.run  note: not thread safe
 	int download_file(const std::string& url, const std::string& save_path);
 
 	inline void set_callback(progress_callback_t callback) {
