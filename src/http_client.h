@@ -11,7 +11,6 @@ typedef _off_t p_off_t;
 typedef off_t p_off_t;
 #endif
 
-//typedef void(*progress_info_callback)(void *userdata, double downloadSpeed, double remainingTime, double progressPercentage);
 
 typedef std::function<void(void *userdata, double download_speed, double remaining_time, double progress_percentage)> progress_info_callback;
 

@@ -54,11 +54,11 @@ void http_downloader::progress_callback(void *userdata, double download_speed, d
 	sprintf(progressFormat, "%.2f", progress_percentage);
 #endif
 
-	std::cout << speedFormat << "\t" << timeFormat << "\t" << progressFormat << "%" << std::endl;
+	//std::cout << speedFormat << "\t" << timeFormat << "\t" << progressFormat << "%" << std::endl;
 
 	this->progress_info_.progress_percentage = progress_percentage;
-	this->progress_info_.remaining_time = remaining_time;
-	this->progress_info_.download_speed = download_speed;
+	this->progress_info_.remaining_time = timeFormat;
+	this->progress_info_.download_speed = speedFormat;
 
 	if (nullptr != progress_callback_) {
 		progress_callback_(progress_info_);
@@ -67,10 +67,8 @@ void http_downloader::progress_callback(void *userdata, double download_speed, d
 }
 
 
-int http_downloader::download(const std::string& url, const std::string& save_path) {
-	int ret = 0;
+int http_downloader::download_file(const std::string& url, const std::string& save_path) {
 	progress_info_callback cbf = std::bind(&http_downloader::progress_callback, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
-	ret = http_client::get_instance()->http_get(url, save_path, 0, cbf);
-
+	int ret = http_client::get_instance()->http_get(url, save_path, 0, cbf);
 	return ret;
 }

@@ -19,7 +19,7 @@ public:
 
 public:
 	//just for download file, not for webpage. like: https:://gtz.io/gtz_latest.run
-	int download(const std::string& url, const std::string& save_path);
+	int download_file(const std::string& url, const std::string& save_path);
 
 	inline void set_callback(progress_callback_t callback) {
 		progress_callback_ = callback;

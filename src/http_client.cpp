@@ -5,7 +5,7 @@
 
 
 
-#define DEBUG_LOG__
+//#define DEBUG_LOG__
 
 #define XLOG(str) http_client::xlog(__DATE__, __TIME__, __FILE__, __LINE__, __FUNCTION__, str);
 
