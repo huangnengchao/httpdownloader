@@ -3,13 +3,14 @@
 #include <sys/stat.h>
 #include <stdlib.h>
 
-//#define DEBUG_LOG__
+#define DEBUG_LOG__
 
 #define XLOG(str) http_client::xlog(__DATE__, __TIME__, __FILE__, __LINE__, __FUNCTION__, str);
 
 
 #ifdef _WIN32
-#define XSLEEP(x) Sleep((x)*1000);
+#include <unistd.h>
+#define XSLEEP(x) sleep(x);
 #else
 #include <unistd.h>
 #define XSLEEP(x) sleep(x);
@@ -269,8 +270,15 @@ int http_client::http_get(const std::string& requesturl, const std::string& save
                 XLOG(s);
         		XSLEEP(1);
 
-            	fflush(fp);
-        		resume_byte_ = get_local_file_length(partPath);
+            	int fflushret = fflush(fp);
+                if (fflushret) {
+                    sprintf(s, "flush error:%d", fflushret);
+                    XLOG(s);
+                }
+
+                resume_byte_ = ftell(fp);
+                
+        		//resume_byte_ = get_local_file_length(partPath);
                 if (resume_byte_ > 0)
                 {
                 	ret  = 0;
