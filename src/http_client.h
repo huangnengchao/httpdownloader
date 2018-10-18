@@ -4,6 +4,7 @@
 #include <string>
 #include <functional>
 #include <curl/curl.h>
+#include <mutex>
 
 #ifdef _WIN32
 typedef _off_t p_off_t;
@@ -21,7 +22,7 @@ public:
 	~http_client();
 
 	static http_client *get_instance();
-	static void destroy_instance();
+	static void release_instance();
 
     int http_get(const std::string& requesturl, const std::string& saveto, void *sender, progress_info_callback cb);
     static void xlog(const char *date, const char *time, const char *file, const int line, const char *func, const char* str);
@@ -50,6 +51,7 @@ private:
     static int count_process_;
     static int retry_;
     static int get_file_length_retry_;		// Get File Length retry times
+    static std::mutex mutex_;
 };
 
 #endif		// __HTTPCLIENT_H__

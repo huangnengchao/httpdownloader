@@ -19,11 +19,7 @@ public:
 
 public:
 	//just for download file, not for webpage. like: https:://gtz.io/gtz_latest.run  note: not thread safe
-	int download_file(const std::string& url, const std::string& save_path);
-
-	inline void set_callback(progress_callback_t callback) {
-		progress_callback_ = callback;
-	}
+	int download_file(const std::string& url, const std::string& save_path, progress_callback_t pcb = nullptr);
 
 private:
 	void progress_callback(void *userdata, double download_speed, double remaining_time, double progress_percentage);
