@@ -277,7 +277,7 @@ int http_client::http_get(const std::string& requesturl, const std::string& save
                 }
 
                 resume_byte_ = ftell(fp);
-                
+
         		//resume_byte_ = get_local_file_length(partPath);
                 if (resume_byte_ > 0)
                 {

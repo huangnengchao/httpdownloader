@@ -63,7 +63,7 @@ void http_downloader::progress_callback(void *userdata, double download_speed, d
 	if (nullptr != progress_callback_) {
 		progress_callback_(progress_info_);
 	}
-	
+
 }
 
 
