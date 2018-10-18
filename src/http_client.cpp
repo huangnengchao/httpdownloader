@@ -16,7 +16,6 @@
 #define XSLEEP(x) sleep(x);
 #endif
 
-
 http_client *http_client::instance_ = NULL;
 
 double http_client::download_file_length_ = -1;

@@ -20,10 +20,10 @@ int main()
 	//hd.download_file("http://ftp.sjtu.edu.cn/ubuntu-cd/18.04.1/ubuntu-18.04.1-live-server-amd64.iso", "ubuntu-18.04.1-live-server-amd64.iso");
 
 	//https  启动下载慢
-	//hd.download_file("https://raw.githubusercontent.com/Genetalks/gtz/master/gtz_latest.run", "gtz_latest.run");
+	hd.download_file("https://raw.githubusercontent.com/Genetalks/gtz/master/gtz_latest.run", "gtz_latest.run");
 
 	//https
-	hd.download_file("https://gtz.io/gtz_latest.run", "gtz_latest.run");
+	//hd.download_file("https://gtz.io/gtz_latest.run", "gtz_latest.run");
 
 	return 0;
 }
