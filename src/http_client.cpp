@@ -9,7 +9,7 @@
 
 
 #ifdef _WIN32
-#define XSLEEP(x) sleep(x);
+#define XSLEEP(x) Sleep((x)*1000);
 #else
 #include <unistd.h>
 #define XSLEEP(x) sleep(x);
@@ -17,18 +17,15 @@
 
 
 http_client *http_client::instance_ = NULL;
-
 double http_client::download_file_length_ = -1;
 p_off_t http_client::resume_byte_ = -1;
 time_t http_client::last_time_ = 0;
-
 volatile bool http_client::stop_curl_ = false;
-
 double http_client::current_process_ = 0.0;
 int http_client::count_process_ = 0;
 int http_client::retry_ = 100;
-
 int http_client::get_file_length_retry_ = 64;
+std::mutex http_client::mutex_;
 
 
 typedef struct
@@ -126,30 +123,43 @@ http_client::~http_client()
 
 http_client *http_client::get_instance()
 {
-    if (instance_ == NULL)
-	{
-		instance_ = new http_client();
-		instance_->init();
+	if (instance_ == NULL) {
+		mutex_.lock();
+		if (instance_ == NULL) {
+			instance_ = new http_client();
+			instance_->init();
+		}
+		mutex_.unlock();
 	}
+
+
 
 	return instance_;
 }
 
-void http_client::destroy_instance()
+void http_client::release_instance()
 {
-    if (instance_ != NULL)
-	{
-        stop_curl_ = true;
-
-        // curl_global_cleanup()    will crash on Qt windows
-
-        delete instance_;
-        instance_ = NULL;
+	mutex_.lock();
+	if (instance_ != NULL) {
+		stop_curl_ = true;
+		// curl_global_cleanup()    will crash on Qt windows
+		delete instance_;
+		instance_ = NULL;
 	}
+	mutex_.unlock();
 }
 
 bool http_client::init()
 {
+	http_client::download_file_length_ = -1;
+	http_client::resume_byte_ = -1;
+	http_client::last_time_ = 0;
+	http_client::stop_curl_ = false;
+	http_client::current_process_ = 0.0;
+	http_client::count_process_ = 0;
+	http_client::retry_ = 100;
+	http_client::get_file_length_retry_ = 64;
+
     if(curl_global_init(CURL_GLOBAL_ALL) != CURLE_OK) {
     	return false;
     }

@@ -67,8 +67,10 @@ void http_downloader::progress_callback(void *userdata, double download_speed, d
 }
 
 
-int http_downloader::download_file(const std::string& url, const std::string& save_path) {
+int http_downloader::download_file(const std::string& url, const std::string& save_path, progress_callback_t pcb) {
+	progress_callback_ = pcb;
 	progress_info_callback cbf = std::bind(&http_downloader::progress_callback, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
 	int ret = http_client::get_instance()->http_get(url, save_path, 0, cbf);
+	http_client::release_instance();
 	return ret;
 }
