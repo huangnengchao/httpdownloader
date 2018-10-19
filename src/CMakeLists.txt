@@ -18,7 +18,8 @@ if(WIN)
 add_definitions(-DUNICODE -D_UNICODE)
 endif()
 
-
+set(CFLAGS CURL_STATICLIB)
+set(CPPFLAGS CURL_STATICLIB)
 
 ADD_LIBRARY(httpdownloader  STATIC ${HTTP_DOWNLOADER_SRC})
 

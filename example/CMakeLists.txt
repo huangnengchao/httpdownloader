@@ -18,12 +18,19 @@ add_definitions(-DUNICODE -D_UNICODE)
 endif()
 
 
-add_executable(example ${EXAMPLE_SRC})
+#add_executable(example ${EXAMPLE_SRC})
 
-target_link_libraries(example  ${CMAKE_INSTALL_PREFIX}/libhttpclient.a)
-target_link_libraries(example  ${curl_LIB_PATH}/libcurl.a)
-target_link_libraries(example  ${openssl_LIB_PATH}/libssl.a ${openssl_LIB_PATH}/libcrypto.a)
-target_link_libraries(example  ${zlib_LIB_PATH}/libz.a)
+ADD_LIBRARY(imp_libcurl STATIC IMPORTED)
+SET_TARGET_PROPERTIES(imp_libcurl PROPERTIES
+    IMPORTED_LOCATION ${curl_LIB_PATH}/libcurl.a)
+ADD_EXECUTABLE(example ${EXAMPLE_SRC})
+TARGET_LINK_LIBRARIES(main imp_libcurl)
+
+
+#target_link_libraries(example  ${CMAKE_INSTALL_PREFIX}/libhttpclient.a)
+#target_link_libraries(example  ${curl_LIB_PATH}/libcurl.a)
+#target_link_libraries(example  ${openssl_LIB_PATH}/libssl.a ${openssl_LIB_PATH}/libcrypto.a)
+#target_link_libraries(example  ${zlib_LIB_PATH}/libz.a)
 
 if(APPLE)
         target_link_libraries(example pthread dl ldap)
