@@ -16,6 +16,10 @@ int main()
 	hd.download_file("https://gtzdata.oss-cn-hangzhou.aliyuncs.com/Apis_mellifera_10a768025aad33307a53bc077b60e4c8.rbin", "Apis_mellifera_10a768025aad33307a53bc077b60e4c8.rbin" , std::bind(&callback, std::placeholders::_1));
 	//hd.download_file("https://gtz.io/gtz_latest.run", "gtz_latest2.run" , std::bind(&callback, std::placeholders::_1));
 	//https  启动下载慢
+
+	//https
+	//hd.download_file("https://gtz.io/gtz_latest.run", "gtz_latest.run");
 	//hd.download_file("https://raw.githubusercontent.com/Genetalks/gtz/master/gtz_latest.run", "gtz_latest.run");
+
 	return 0;
 }

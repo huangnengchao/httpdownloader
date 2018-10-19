@@ -16,7 +16,6 @@
 #define XSLEEP(x) sleep(x);
 #endif
 
-
 http_client *http_client::instance_ = NULL;
 double http_client::download_file_length_ = -1;
 p_off_t http_client::resume_byte_ = -1;
@@ -238,6 +237,8 @@ int http_client::http_get(const std::string& requesturl, const std::string& save
         // The maximum time that allow to wait download
         //ret |= curl_easy_setopt(easy_handle, CURLOPT_TIMEOUT, 12L);
 
+        ret |= curl_easy_setopt(easy_handle, CURLOPT_SSL_VERIFYPEER, 0L);
+
 		resume_byte_ = get_local_file_length(partPath);
         if (resume_byte_ > 0)
         {
@@ -375,33 +376,35 @@ double http_client::get_download_file_length(std::string url)
 	int ret = CURLE_OK;
 	double size = -1;
 
-	int retry = http_client::get_file_length_retry_;
-	do
-	{
-		easy_handle = curl_easy_init();
-		if (!easy_handle)
-		{
+    do
+    {
+        easy_handle = curl_easy_init();
+        if (!easy_handle)
+        {
             XLOG("curl_easy_init error");
-			break;
-		}
+            break;
+        }
 
-		// Only get the header data
-		ret = curl_easy_setopt(easy_handle, CURLOPT_URL, url.c_str());
-		ret |= curl_easy_setopt(easy_handle, CURLOPT_HEADER, 1L);
-		ret |= curl_easy_setopt(easy_handle, CURLOPT_NOBODY, 1L);
-        ret |= curl_easy_setopt(easy_handle, CURLOPT_WRITEFUNCTION, nousecb);	// libcurl_a.lib will return error code 23 without this sentence on windows
+        // Only get the header data
+        ret = curl_easy_setopt(easy_handle, CURLOPT_URL, url.c_str());
+        ret |= curl_easy_setopt(easy_handle, CURLOPT_HEADER, 1L);
+        ret |= curl_easy_setopt(easy_handle, CURLOPT_NOBODY, 1L);
+        ret |= curl_easy_setopt(easy_handle, CURLOPT_WRITEFUNCTION, nousecb);   // libcurl_a.lib will return error code 23 without this sentence on windows
 
         // The maximum time that allow to wait download
         ret |= curl_easy_setopt(easy_handle, CURLOPT_TIMEOUT, 32L);
-
-
-		if (ret != CURLE_OK)
-		{
+        ret |= curl_easy_setopt(easy_handle, CURLOPT_SSL_VERIFYPEER, 0L);
+        if (ret != CURLE_OK)
+        {
             XLOG("curl_easy_setopt error");
-			break;
-		}
+            return size;
+        }
+    } while (0);
 
 
+    int retry = http_client::get_file_length_retry_;
+	do
+	{
 		ret = curl_easy_perform(easy_handle);
 		if (ret != CURLE_OK) {
 			char s[100] = { 0 };
@@ -415,7 +418,6 @@ double http_client::get_download_file_length(std::string url)
 			XSLEEP(1);
 			continue;
 		}
-
 
 		// size = -1 if no Content-Length return or Content-Length=0
 		ret = curl_easy_getinfo(easy_handle, CURLINFO_CONTENT_LENGTH_DOWNLOAD, &size);
