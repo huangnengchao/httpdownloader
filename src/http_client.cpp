@@ -27,6 +27,7 @@ int http_client::get_file_length_retry_times = 64;
 std::mutex http_client::mutex_;
 
 
+
 typedef struct
 {
     void *sender;
@@ -41,6 +42,8 @@ typedef enum
     HTTP_REQUEST_ERROR = -999,
 
 }Http_Client_Response;
+
+
 
 
 size_t http_client::write_callback(char *buffer, size_t size, size_t nmemb, void *userdata)

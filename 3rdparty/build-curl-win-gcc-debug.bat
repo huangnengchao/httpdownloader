@@ -1,0 +1,14 @@
+set COMPILER=gcc
+set OSTYPE=win
+set BUILDTYPE=debug
+
+cd curl-7.61.1
+set CURL_ROOT=%cd%
+
+set INSTALL_PATH=%CURL_ROOT%\..\..\lib\%OSTYPE%\%COMPILER%\%BUILDTYPE%\curl
+
+cmake -G "MinGW Makefiles" -DCURL_STATIC_CRT="ON" -DENABLE_DEBUG="ON" -DCFLAGS="-m64" -DCPPFLAGS="-m64" -DCMAKE_INSTALL_PREFIX=%INSTALL_PATH% -DBUILD_SHARED_LIBS="no" -DCMAKE_USE_OPENSSL="yes" -DOPENSSL_ROOT_DIR="C:/mingw64/opt"
+make
+make install
+
+cd %CURL_ROOT%/..

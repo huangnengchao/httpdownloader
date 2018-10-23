@@ -1,0 +1,38 @@
+rem export ROOT="$( cd "$(dirname "$0")" ; pwd -P )"
+
+rem export COMPILER_LANG=gcc
+rem export BUILD_TYPE=Debug
+rem export OS=linux
+rem export VERSION=Public
+rem export BUILD_DIR=$ROOT/build-$OS-$VERSION-$COMPILER_LANG-$BUILD_TYPE
+rem export INSTALL_PATH=$ROOT/debug-$OS-$VERSION-$COMPILER_LANG-$BUILD_TYPE
+
+rem mkdir -p $BUILD_DIR
+rem cd $BUILD_DIR
+
+rem cmake $ROOT -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCOMPILER_CHOOSE=$COMPILER_LANG \
+rem     -DCMAKE_INSTALL_PREFIX=$INSTALL_PATH -DPUBLIC=ON
+rem make VERBOSE=1 -j2
+rem make install
+
+set ROOT=%cd%
+
+set COMPILER_LANG=gcc
+set BUILD_TYPE=Debug
+set OS=win
+set VERSION=Public
+
+set BUILD_DIR=%ROOT%\build-%OS%-%VERSION%-%COMPILER_LANG%-%BUILD_TYPE%
+set INSTALL_PATH=%ROOT%\debug-%OS%-%VERSION%--%COMPILER_LANG%-%BUILD_TYPE%
+
+::rd /s /q %BUILD_DIR%
+mkdir %BUILD_DIR%
+
+cd %BUILD_DIR%
+
+cmake DCFLAGS="-DCURL_STATICLIB" DCPPFLAGS="-DCURL_STATICLIB" -m64 -S %ROOT% -B %BUILD_DIR% -G "MinGW Makefiles" -DCOMPILER_CHOOSE=%COMPILER_LANG% -DCMAKE_BUILD_TYPE=%BUILD_TYPE% -DCMAKE_INSTALL_PREFIX=%INSTALL_PATH% -DPUBLIC=ON
+
+mingw32-make
+mingw32-make install
+
+cd %ROOT%
