@@ -3,10 +3,9 @@
 #include <sys/stat.h>
 #include <stdlib.h>
 
-#define DEBUG_LOG__
+//#define DEBUG
 
 #define XLOG(str) http_client::xlog(__DATE__, __TIME__, __FILE__, __LINE__, __FUNCTION__, str);
-
 
 #ifdef _WIN32
 #include <unistd.h>
@@ -17,14 +16,14 @@
 #endif
 
 http_client *http_client::instance_ = NULL;
-double http_client::download_file_length_ = -1;
-p_off_t http_client::resume_byte_ = -1;
-time_t http_client::last_time_ = 0;
-volatile bool http_client::stop_curl_ = false;
-double http_client::current_process_ = 0.0;
-int http_client::count_process_ = 0;
-int http_client::retry_ = 100;
-int http_client::get_file_length_retry_ = 64;
+double http_client::download_file_length = -1;
+p_off_t http_client::resume_byte = -1;
+time_t http_client::last_time = 0;
+volatile bool http_client::stop_curl = false;
+double http_client::current_process = 0.0;
+int http_client::count_process = 0;
+int http_client::retry_times = 100;
+int http_client::get_file_length_retry_times = 64;
 std::mutex http_client::mutex_;
 
 
@@ -61,15 +60,15 @@ int http_client::progress_callback(void *userdata, curl_off_t dltotal, curl_off_
     (void)ultotal;
     (void)ulnow;
 
-    if(stop_curl_)
+    if(stop_curl)
         return 1;
 
     time_t now = time(NULL);
-    if (now - last_time_ < 1)
+    if (now - last_time < 1)
     {
         return 0;
     }
-    last_time_ = now;
+    last_time = now;
 
     Progress_User_Data *data = static_cast<Progress_User_Data *>(userdata);
     CURL *easy_handle = data->handle;
@@ -88,19 +87,19 @@ int http_client::progress_callback(void *userdata, curl_off_t dltotal, curl_off_
 
     if (dltotal != 0 && speed != 0)
     {
-        progress = (dlnow + resume_byte_) / download_file_length_ * 100;
-        leftTime = (download_file_length_ - dlnow - resume_byte_) / speed;
+        progress = (dlnow + resume_byte) / download_file_length * 100;
+        leftTime = (download_file_length - dlnow - resume_byte) / speed;
         //printf("\t%.2f%%\tRemaing time:%s\n", progress, timeFormat);
     }
 
-    if (http_client::current_process_ == progress) {
-        http_client::count_process_++;
+    if (http_client::current_process == progress) {
+        http_client::count_process++;
     } else  {
-        http_client::current_process_ = progress;
+        http_client::current_process = progress;
     }
 
-    if (http_client::count_process_ > 10) {
-        http_client::count_process_ = 0;
+    if (http_client::count_process > 10) {
+        http_client::count_process = 0;
         return 1;
     }
 
@@ -141,7 +140,7 @@ void http_client::release_instance()
 {
 	mutex_.lock();
 	if (instance_ != NULL) {
-		stop_curl_ = true;
+		stop_curl = true;
 		// curl_global_cleanup()    will crash on Qt windows
 		delete instance_;
 		instance_ = NULL;
@@ -151,14 +150,14 @@ void http_client::release_instance()
 
 bool http_client::init()
 {
-	http_client::download_file_length_ = -1;
-	http_client::resume_byte_ = -1;
-	http_client::last_time_ = 0;
-	http_client::stop_curl_ = false;
-	http_client::current_process_ = 0.0;
-	http_client::count_process_ = 0;
-	http_client::retry_ = 100;
-	http_client::get_file_length_retry_ = 64;
+	http_client::download_file_length = -1;
+	http_client::resume_byte = -1;
+	http_client::last_time = 0;
+	http_client::stop_curl = false;
+	http_client::current_process = 0.0;
+	http_client::count_process = 0;
+	http_client::retry_times = 100;
+	http_client::get_file_length_retry_times = 64;
 
     if(curl_global_init(CURL_GLOBAL_ALL) != CURLE_OK) {
     	return false;
@@ -168,7 +167,7 @@ bool http_client::init()
 
 void http_client::xlog(const char *date, const char *time, const char *file, const int line, const char *func, const char *str)
 {
-#ifdef DEBUG_LOG__
+#ifdef DEBUG
 	printf("%s | %s | %s | %d | %s | %s\n", date, time, file, line, func, str);
 #endif
 }
@@ -187,9 +186,9 @@ int http_client::http_get(const std::string& requesturl, const std::string& save
     do
     {
         // Get the file size on the server
-        download_file_length_ = get_download_file_length(requesturl);
+        download_file_length = get_download_file_length(requesturl);
 
-        if (download_file_length_ < 0)
+        if (download_file_length < 0)
         {
             XLOG("getDownloadFileLength error");
             break;
@@ -239,11 +238,11 @@ int http_client::http_get(const std::string& requesturl, const std::string& save
 
         ret |= curl_easy_setopt(easy_handle, CURLOPT_SSL_VERIFYPEER, 0L);
 
-		resume_byte_ = get_local_file_length(partPath);
-        if (resume_byte_ > 0)
+		resume_byte = get_local_file_length(partPath);
+        if (resume_byte > 0)
         {
             // Set a point to resume transfer
-            ret |= curl_easy_setopt(easy_handle, CURLOPT_RESUME_FROM_LARGE, resume_byte_);
+            ret |= curl_easy_setopt(easy_handle, CURLOPT_RESUME_FROM_LARGE, resume_byte);
         }
 
         if (ret != CURLE_OK)
@@ -254,7 +253,7 @@ int http_client::http_get(const std::string& requesturl, const std::string& save
         }
 
         XLOG("start");
-        int retry = http_client::retry_;
+        int retry = http_client::retry_times;
         while (retry--) {
         	ret = curl_easy_perform(easy_handle);
         	if (ret == CURLE_OK) {
@@ -271,20 +270,28 @@ int http_client::http_get(const std::string& requesturl, const std::string& save
                 XLOG(s);
         		XSLEEP(1);
 
-            	int fflushret = fflush(fp);
-                if (fflushret) {
-                    sprintf(s, "flush error:%d", fflushret);
-                    XLOG(s);
-                }
+				int fflushret = fflush(fp);
+				if (fflushret) {
+					printf("fflush file error: %d", fflushret);
+					if (fp != NULL) {
+						fclose(fp);
+						fp = NULL;
+					}
+					curl_easy_cleanup(easy_handle);
+					easy_handle = NULL;
+					remove(partPath.c_str());
+					ret = HTTP_REQUEST_ERROR;
+					return ret;
+				}
 
-                resume_byte_ = ftell(fp);
+                resume_byte = ftell(fp);
 
         		//resume_byte_ = get_local_file_length(partPath);
-                if (resume_byte_ > 0)
+                if (resume_byte > 0)
                 {
                 	ret  = 0;
                     // Set a point to resume transfer
-                	ret |= curl_easy_setopt(easy_handle, CURLOPT_RESUME_FROM_LARGE, resume_byte_);
+                	ret |= curl_easy_setopt(easy_handle, CURLOPT_RESUME_FROM_LARGE, resume_byte);
                     if (ret != CURLE_OK)
                     {
             			ret = HTTP_REQUEST_ERROR;
@@ -382,7 +389,7 @@ double http_client::get_download_file_length(std::string url)
         if (!easy_handle)
         {
             XLOG("curl_easy_init error");
-            break;
+            return size;
         }
 
         // Only get the header data
@@ -402,7 +409,7 @@ double http_client::get_download_file_length(std::string url)
     } while (0);
 
 
-    int retry = http_client::get_file_length_retry_;
+    int retry = http_client::get_file_length_retry_times;
 	do
 	{
 		ret = curl_easy_perform(easy_handle);
@@ -432,3 +439,46 @@ double http_client::get_download_file_length(std::string url)
 	curl_easy_cleanup(easy_handle);
 	return size;
 }
+
+
+double http_client::get_download_speed(const std::string& url) {
+   double speed = -1;
+   CURL *easy_handle = NULL;
+   int ret = CURLE_OK;
+   do
+   {
+       easy_handle = curl_easy_init();
+       if (!easy_handle) {
+           XLOG("curl_easy_init error");
+           return speed;
+       }
+
+       // Only get the header data
+       ret = curl_easy_setopt(easy_handle, CURLOPT_URL, url.c_str());
+       ret |= curl_easy_setopt(easy_handle, CURLOPT_WRITEFUNCTION, nousecb);
+       ret |= curl_easy_setopt(easy_handle, CURLOPT_SSL_VERIFYPEER, 0L);
+
+       // Fail the request if the HTTP code returned is equal to or larger than 400
+       ret |= curl_easy_setopt(easy_handle, CURLOPT_CONNECTTIMEOUT, 32L);
+       //ret |= curl_easy_setopt(curl_handle, CURLOPT_USERAGENT, "libcurl-speedchecker/"CHKSPEED_VERSION);
+
+       if (ret != CURLE_OK) {
+           XLOG("curl_easy_setopt error");
+           return speed;
+       }
+   } while (0);
+
+    ret = curl_easy_perform(easy_handle);
+    if (ret == CURLE_OK) {
+        curl_off_t val;
+        /* check for average download speed */
+        ret = curl_easy_getinfo(easy_handle, CURLINFO_SPEED_DOWNLOAD_T, &val);
+        if((CURLE_OK == ret) && (val>0)) {
+            speed = val / 1024; //kbyte/sec.
+        }
+    }
+
+   curl_easy_cleanup(easy_handle);
+   return speed;
+}
+

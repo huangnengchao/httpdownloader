@@ -27,6 +27,8 @@ public:
     int http_get(const std::string& requesturl, const std::string& saveto, void *sender, progress_info_callback cb);
     static void xlog(const char *date, const char *time, const char *file, const int line, const char *func, const char* str);
 
+    double get_download_speed(const std::string& url);
+
 private:
 	http_client();
 
@@ -43,14 +45,14 @@ private:
 
 private:
 	static http_client *instance_;
-	static double download_file_length_;
-	static p_off_t resume_byte_;			//
-	static time_t last_time_;				// Call frequency of the callback function
-    volatile static bool stop_curl_;		// Stop curl
-    static double current_process_;
-    static int count_process_;
-    static int retry_;
-    static int get_file_length_retry_;		// Get File Length retry times
+	static double download_file_length;
+	static p_off_t resume_byte;			//
+	static time_t last_time;				// Call frequency of the callback function
+    volatile static bool stop_curl;		// Stop curl
+    static double current_process;
+    static int count_process;
+    static int retry_times;
+    static int get_file_length_retry_times;		// Get File Length retry times
     static std::mutex mutex_;
 };
 

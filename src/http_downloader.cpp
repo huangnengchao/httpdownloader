@@ -11,6 +11,10 @@ http_downloader::~http_downloader() {
 
 }
 
+double http_downloader::get_download_speed(const std::string& url) {
+    double speed = http_client::get_instance()->get_download_speed(url);
+    return speed;
+}
 
 void http_downloader::progress_callback(void *userdata, double download_speed, double remaining_time, double progress_percentage)
 {
